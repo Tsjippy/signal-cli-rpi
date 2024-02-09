@@ -5,7 +5,7 @@ echo "Installing version $VERSION"
 
 export signalUrl=$(curl -s 'https://api.github.com/repos/AsamK/signal-cli/releases/latest' | python3 -c "import sys, json; assets=json.load(sys.stdin)['assets']; url = [x for x in assets if 'signal-cli-$VERSION.tar.gz' in x['browser_download_url']]; print(url[0]['browser_download_url']);")
 
-export libUrl=$(curl -s 'https://api.github.com/repos/exquo/signal-libs-build/releases/latest' | python3 -c "import sys, json; assets=json.load(sys.stdin)['assets']; url = [x for x in assets if '-aarch64-unknown-linux-' in x['browser_download_url']]; print(url[0]['browser_download_url']);")
+export libUrl=$(curl -s 'https://api.github.com/repos/exquo/signal-libs-build/releases/latest' | python3 -c "import sys, json; assets=json.load(sys.stdin)['assets']; url = [x for x in assets if 'armv7' in x['browser_download_url']]; print(url[0]['browser_download_url']);")
 
 # get lastest libsignal release version
 export LIBVERSION=$(curl --silent "https://api.github.com/repos/exquo/signal-libs-build/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/'| sed 's/libsignal_v//')
@@ -18,9 +18,9 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 # default install
-if [ -d "/opt/signal-cli-${VERSION}" ]
+if [ -d "/opt/signal-cli-${VERSION}" ] && $1 != '-force'
 then
-    echo "signal-cli is alerady installed with this version: ${VERSION}"
+    echo "signal-cli is already installed with this version: ${VERSION} run with -force param to reinstall"
     exit 0
 fi
 
@@ -50,7 +50,7 @@ fi
 
 mkdir /tmp/signal-cli-install
 
-rm -R /opt/signal-cli
+rm -R /opt/signal-cli-"${VERSION}"
 
 curl --proto '=https' --tlsv1.2 -L -o /tmp/signal-cli-install/signal-cli-"${VERSION}"-Linux.tar.gz $signalUrl
 tar xf /tmp/signal-cli-install/signal-cli-"${VERSION}"-Linux.tar.gz -C /opt
